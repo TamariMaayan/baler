@@ -407,23 +407,19 @@ class Conv_AE(nn.Module):
         self.conv_op_shape = conv_op_shape
 
 
-class FPGA_prototype_model(nn.Module):
+
+class FPGA_PorotypeEncoder(nn.Module):
     def __init__(self, n_features, z_dim, *args, **kwargs):
-        super(FPGA_prototype_model, self).__init__(*args, **kwargs)
+        super(FPGA_PorotypeEncoder, self).__init__(*args, **kwargs)
 
         # encoder
-        self.en1 = nn.Linear(n_features, 20, dtype=torch.float64)
+        self.en1 = nn.Linear(n_features, 200, dtype=torch.float32)
         self.en_act1 = nn.ReLU()
-        self.en2 = nn.Linear(20, 10, dtype=torch.float64)
+        self.en2 = nn.Linear(200, 100, dtype=torch.float32)
         self.en_act2 = nn.ReLU()
-        self.en3 = nn.Linear(10, z_dim, dtype=torch.float64)
-
-        # decoder
-        self.de1 = nn.Linear(z_dim, 10, dtype=torch.float64)
-        self.de_act1 = nn.ReLU()
-        self.de2 = nn.Linear(10, 20, dtype=torch.float64)
-        self.de_act2 = nn.ReLU()
-        self.de3 = nn.Linear(20, n_features, dtype=torch.float64)
+        self.en3 = nn.Linear(100, 50, dtype=torch.float32)
+        self.en_act3 = nn.ReLU()
+        self.en4 = nn.Linear(50, z_dim, dtype=torch.float32)
 
         self.n_features = n_features
         self.z_dim = z_dim
@@ -434,33 +430,65 @@ class FPGA_prototype_model(nn.Module):
         s3 = self.en2(s2)
         s4 = self.en_act2(s3)
         s5 = self.en3(s4)
-        return s5
+        s6 = self.en_act3(s5)
+        s7 = self.en4(s6)
+        return s7
+
+class FPGA_PorotypeDecoder(nn.Module):
+    def __init__(self, n_features, z_dim, *args, **kwargs):
+        super(FPGA_PorotypeDecoder, self).__init__(*args, **kwargs)
+
+        # decoder
+        self.de1 = nn.Linear(z_dim, 50, dtype=torch.float32)
+        self.de_act1 = nn.ReLU()
+        self.de2 = nn.Linear(50, 100, dtype=torch.float32)
+        self.de_act2 = nn.ReLU()
+        self.de3 = nn.Linear(100, 200, dtype=torch.float32)
+        self.de_act3 = nn.ReLU()
+        self.de4 = nn.Linear(200, n_features, dtype=torch.float32)
+
+        self.n_features = n_features
+        self.z_dim = z_dim
 
     def decode(self, z):
-        s6 = self.de1(z)
-        s7 = self.de_act1(s6)
-        s8 = self.de2(s7)
-        s9 = self.de_act2(s8)
-        s10 = self.de3(s9)
-        return s10
+        s8 = self.de1(z)
+        s9 = self.de_act1(s8)
+        s10 = self.de2(s9)
+        s11 = self.de_act2(s10)
+        s12 = self.de3(s11)
+        s13 = self.de_act3(s12)
+        s14 = self.de4(s13)
+        return s14
+
+
+class FPGA_PorotypeAutoencoder(nn.Module):
+    def __init__(self, n_features, z_dim, *args, **kwargs):
+        super(FPGA_PorotypeAutoencoder, self).__init__(*args, **kwargs)
+
+        self.encoder = FPGA_PorotypeEncoder(n_features, z_dim)
+        self.decoder = FPGA_PorotypeDecoder(n_features, z_dim)
+
+
+    def encode(self,x):
+        z = self.encoder.encode(x)
+        return z
+    
+    def decode(self,x):
+        z = self.decoder.decode(x)
+        return z
 
     def forward(self, x):
         z = self.encode(x)
         return self.decode(z)
 
-    def get_layers(self) -> list:
-        return [
-            self.en1,
-            self.en_act1,
-            self.en2,
-            self.en_act2,
-            self.en3,
-            self.de1,
-            self.de_act1,
-            self.de2,
-            self.de_act2,
-            self.de3,
-        ]
+    def save_encoder(self, file_path):
+        torch.save(self.encoder.state_dict(), file_path)
+
+    def save_decoder(self, file_path):
+        torch.save(self.decoder.state_dict(), file_path)
+
+
+
 
 
 class Conv_AE_3D(nn.Module):

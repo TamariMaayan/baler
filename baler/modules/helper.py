@@ -725,7 +725,7 @@ def decompress(
 
     if config.data_dimension == 2 and config.model_type == "dense":
         decompressed = decompressed.reshape(
-            (len(decompressed), original_shape[1], original_shape[2])
+            (original_shape[0], original_shape[1], original_shape[2])
         )
 
     return decompressed, names, normalization_features
@@ -806,9 +806,9 @@ def perform_hls4ml_conversion(output_path, config):
 
     import hls4ml
 
-    model_path = os.path.join(output_path, "compressed_output", "model.pt")
+    model_path = os.path.join(output_path, "compressed_output", "encoder.pt")
 
-    model_object = data_processing.initialise_model(config.model_name)
+    model_object = data_processing.initialise_model(config.hls4ml_model_name)
     model = data_processing.load_model(
         model_object,
         model_path=model_path,
@@ -816,7 +816,7 @@ def perform_hls4ml_conversion(output_path, config):
         z_dim=config.latent_space_size,
     )
     model.to("cpu")
-
+   
     hls_config = hls4ml.utils.config_from_pytorch_model(
         model,
         granularity="name",
