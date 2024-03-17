@@ -1,15 +1,15 @@
 def set_config(c):
     c.input_path = "workspaces/CFD_workspace/data/CFD_animation.npz"
     c.compression_ratio = 5
-    c.number_of_columns = 25
-    c.latent_space_size = 5
+    #c.number_of_columns = 25
+    #c.latent_space_size = 5
     c.epochs = 2000
     c.early_stopping = False
     c.early_stopping_patience = 100
     c.min_delta = 0
     c.lr_scheduler = True
     c.lr_scheduler_patience = 50
-    c.model_name = "FPGA_PorotypeAutoencoder"
+    c.model_name = "FPGA_DNNPorotypeAutoencoder"#"CFD_dense_AE"
     c.model_type = "dense"
     c.custom_norm = True
     c.l1 = True
@@ -28,15 +28,15 @@ def set_config(c):
     c.compress_to_latent_space = False
     c.save_error_bounded_deltas = False
     c.error_bounded_requirement = 1
-    c.convert_to_blocks = (-1,1,25)
+    c.convert_to_blocks = [1,1,25]
     # c.custom_loss_function = "loss_function_swae"
 
-    c.separate_model_saving = True
+    c.separate_model_saving = False
 
 
 # == hls4ml configuration options ==
 
-    c.hls4ml_model_name            = "FPGA_PorotypeEncoder"
+    c.hls4ml_model_name            = "FPGA_DNNPorotypeEncoder"
     c.default_reuse_factor         = 25
     c.default_precision            = "ap_fixed<16,8>"
     c.Strategy                     = "resource"

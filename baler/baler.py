@@ -194,6 +194,9 @@ def perform_training(output_path, config, verbose: bool):
             os.path.join(output_path, "compressed_output", "encoder.pt"),
             os.path.join(output_path, "compressed_output", "decoder.pt"),
         )
+        helper.model_saver(
+            trained_model, os.path.join(output_path, "compressed_output", "model.pt")
+        )
     else:
         helper.model_saver(
             trained_model, os.path.join(output_path, "compressed_output", "model.pt")
