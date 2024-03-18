@@ -3,17 +3,19 @@ def set_config(c):
     c.compression_ratio = 5
     #c.number_of_columns = 25
     #c.latent_space_size = 5
-    c.epochs = 2000
+    c.epochs = 3000
     c.early_stopping = False
     c.early_stopping_patience = 100
     c.min_delta = 0
     c.lr_scheduler = True
     c.lr_scheduler_patience = 50
-    c.model_name = "FPGA_DNNPorotypeAutoencoder"#"CFD_dense_AE"
+    c.model_name = "FPGA_DNNPorotypeAutoencoder"
+    c.encoder_name = "FPGA_DNNPorotypeEncoder"
+    c.decoder_name = "FPGA_DNNPorotypeDecoder"
     c.model_type = "dense"
     c.custom_norm = True
     c.l1 = True
-    c.reg_param = 0.001
+    c.reg_param = 0.0007
     c.RHO = 0.05
     c.lr = 0.001
     c.batch_size = 6000
@@ -31,7 +33,7 @@ def set_config(c):
     c.convert_to_blocks = [1,1,25]
     # c.custom_loss_function = "loss_function_swae"
 
-    c.separate_model_saving = False
+    c.separate_model_saving = True
 
 
 # == hls4ml configuration options ==

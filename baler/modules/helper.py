@@ -537,13 +537,23 @@ def compress(model_path, config):
     latent_space_size = config.latent_space_size
     bs = config.batch_size
     device = get_device()
-    model_object = data_processing.initialise_model(config.model_name)
-    model = data_processing.load_model(
+    if config.separate_model_saving:
+        model_object = data_processing.initialise_model(config.encoder_name)
+        model = data_processing.load_model(
         model_object,
         model_path=model_path,
         n_features=n_features,
         z_dim=config.latent_space_size,
     )
+    else:
+        model_object = data_processing.initialise_model(config.model_name)
+        model = data_processing.load_model(
+            model_object,
+            model_path=model_path,
+            n_features=n_features,
+            z_dim=config.latent_space_size,
+        )
+
     model.eval()
 
     if config.data_dimension == 2:
@@ -662,7 +672,10 @@ def decompress(
         error_bound_index = loaded_batch_indexes[1]
         deltas_added = 0
 
-    model_name = config.model_name
+    if config.separate_model_saving:
+        model_name = config.decoder_name
+    else:
+        model_name = config.model_name
     latent_space_size = len(data[0])
     bs = config.batch_size
     model_dict = torch.load(str(model_path), map_location=get_device())
