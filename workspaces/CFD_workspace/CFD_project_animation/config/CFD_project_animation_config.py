@@ -1,8 +1,8 @@
 def set_config(c):
     c.input_path = "workspaces/CFD_workspace/data/CFD_animation.npz"
     c.compression_ratio = 5
-    #c.number_of_columns = 25
-    #c.latent_space_size = 5
+    c.number_of_columns = 25
+    c.latent_space_size = 5
     c.epochs = 3000
     c.early_stopping = False
     c.early_stopping_patience = 100
@@ -39,6 +39,7 @@ def set_config(c):
 # == hls4ml configuration options ==
 
     c.hls4ml_model_name            = "FPGA_DNNPorotypeEncoder"
+    c.hls4ml_model_part            = "encoder"
     c.default_reuse_factor         = 25
     c.default_precision            = "ap_fixed<16,8>"
     c.Strategy                     = "resource"
@@ -47,17 +48,12 @@ def set_config(c):
     c.IOType                       = "io_stream" 
     c.InputShape                   = (1,25)
     c.ProjectName                  = "r1_ios"
-    c.OutputDir                    = "workspaces/CFD_workspace/rr1_ios/output/hls4ml"
+    c.OutputDir                    = "workspaces/CFD_workspace/output/hls4ml"
     c.InputData                    = None
     c.OutputPredictions            = None
     c.csim                         = False
     c.synth                        = True
-    c.cosim                        = False
+    c.cosim                        = True
     c.export                       = False
 
 
-#     c.mse_sum = True
-#     c.emd = False
-#     c.l1 = True
-#     c.activation_extraction = False
-#     c.deterministic_algorithm = False

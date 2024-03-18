@@ -819,8 +819,13 @@ def perform_hls4ml_conversion(output_path, config):
 
     import hls4ml
 
-    model_path = os.path.join(output_path, "compressed_output", "encoder.pt")
-
+    if config.hls4ml_model_part == "model":
+        model_path = os.path.join(output_path, "compressed_output", "model.pt")
+    elif config.hls4ml_model_part == "encoder":
+        model_path = os.path.join(output_path, "compressed_output", "encoder.pt")
+    elif config.hls4ml_model_part == "decoder":
+        model_path = os.path.join(output_path, "compressed_output", "decoder.pt")
+    
     model_object = data_processing.initialise_model(config.hls4ml_model_name)
     model = data_processing.load_model(
         model_object,
@@ -847,10 +852,63 @@ def perform_hls4ml_conversion(output_path, config):
     cfg["PytorchModel"] = model
     cfg["InputShape"] = config.InputShape
     cfg["OutputDir"] = config.OutputDir
+    if not os.path.exists(config.OutputDir):
+        os.makedirs(config.OutputDir)
 
     if config.InputData and config.OutputPredictions:
         cfg["InputData"] = config.InputData
         cfg["OutputPredictions"] = config.OutputPredictions
+    else: 
+        # all this assumes for now DNN model.
+        if config.hls4ml_model_part == "model":
+            input_data = np.load(config.input_path)["data"]
+            input_data_path = os.path.join(config.OutputDir,'input_data.dat')
+            output_data_path = os.path.join(config.OutputDir,'output_data.dat')
+            if hasattr(config, "convert_to_blocks") and config.convert_to_blocks:
+                input_data = data_processing.convert_to_blocks_util(config.convert_to_blocks,input_data) 
+            with open(input_data_path,'w') as f:
+                for i in range(input_data.shape[0]):
+                    f.write(" ".join(input_data[i].astype(str).tolist()[0])+"\n")
+            os.system(f'cp {input_data_path} {output_data_path}')
+            cfg["InputData"] = input_data_path
+            cfg["OutputPredictions"] = output_data_path
+
+        elif config.hls4ml_model_part == "encoder":
+            input_data = np.load(config.input_path)["data"]
+            if hasattr(config, "convert_to_blocks") and config.convert_to_blocks:
+                input_data = data_processing.convert_to_blocks_util(config.convert_to_blocks,input_data)         
+            input_data_path = os.path.join(config.OutputDir,'input_data.dat')
+            with open(input_data_path,'w') as f:
+                for i in range(input_data.shape[0]):
+                    f.write(" ".join(input_data[i].astype(str).tolist()[0])+"\n")
+            cfg["InputData"] = input_data_path
+            
+            latent_space_path = os.path.join(output_path, "compressed_output", "compressed.npz")
+            latent_space = np.load(latent_space_path)["data"]
+            output_data_path = os.path.join(config.OutputDir,'output_data.dat')
+            with open(output_data_path,'w') as f:
+                for i in range(latent_space.shape[0]):
+                    f.write(" ".join(latent_space[i].astype(str).tolist())+"\n")
+            cfg["OutputPredictions"] = output_data_path
+
+        elif config.hls4ml_model_part == "decoder":
+            latent_space_path = os.path.join(output_path, "compressed_output", "compressed.npz")
+            latent_space = np.load(latent_space_path)["data"]
+            input_data_path = os.path.join(config.OutputDir,'input_data.dat')
+            with open(input_data_path,'w') as f:
+                for i in range(latent_space.shape[0]):
+                    f.write(" ".join(latent_space[i].astype(str).tolist())+"\n")
+            cfg["InputData"] = input_data_path
+
+            output_data = np.load(config.input_path)["data"]
+            if hasattr(config, "convert_to_blocks") and config.convert_to_blocks:
+                output_data = data_processing.convert_to_blocks_util(config.convert_to_blocks,output_data)         
+            output_data_path = os.path.join(config.OutputDir,'output_data.dat')
+            with open(output_data_path,'w') as f:
+                for i in range(output_data.shape[0]):
+                    f.write(" ".join(output_data[i].astype(str).tolist()[0])+"\n")
+            cfg["OutputPredictions"] = output_data_path
+
 
     hls_model = hls4ml.converters.pytorch_to_hls(cfg)
     hls_model.config.config["ProjectName"] = config.ProjectName
